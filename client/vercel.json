@@ -1,0 +1,12 @@
+{
+  "framework": "vite",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://congo-5ck9.onrender.com/api/$1"
+    }
+  ]
+}

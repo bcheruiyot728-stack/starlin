@@ -1,0 +1,12 @@
+{
+  "framework": "vite",
+  "installCommand": "cd client && npm install",
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://congo-5ck9.onrender.com/api/$1"
+    }
+  ]
+}
