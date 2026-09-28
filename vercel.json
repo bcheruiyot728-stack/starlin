@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://congo-5ck9.onrender.com/api/$1"
+      "destination": "https://starlin.onrender.com/api/$1"
     }
   ]
 }

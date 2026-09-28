@@ -4,7 +4,7 @@ import LandingPage from './components/LandingPage';
 import { BRAND_LOGO_SOURCES } from './constants/brand';
 
 const configuredApiBase = (import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '');
-const API_BASE_URL = configuredApiBase || 'https://starlinairteldata.onrender.com';
+const API_BASE_URL = configuredApiBase || 'https://starlin.onrender.com';
 const FALLBACK_API_BASE_URL = (import.meta.env.VITE_FALLBACK_API_BASE_URL || '').trim().replace(/\/$/, '');
 
 const apiFetch = async (path, options) => {
