@@ -416,7 +416,14 @@ if (!TELEGRAM_ENABLED) {
   })();
 }
 
-app.use(cors());
+const corsOptions = {
+  origin: ['https://starlin.onrender.com', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req, res) => {

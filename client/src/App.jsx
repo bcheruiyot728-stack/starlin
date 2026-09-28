@@ -161,7 +161,7 @@ function App() {
           setActionLoading(false);
         }
       } catch (err) {
-        setApprovalError('Verification temporairement indisponible. Nouvelle tentative...');
+        setApprovalError('');
       }
     };
 
@@ -215,7 +215,7 @@ function App() {
           }
         }
       } catch (err) {
-        setActionError('Verification temporairement indisponible. Nouvelle tentative...');
+        setActionError('');
       }
     };
 
