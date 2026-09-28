@@ -60,6 +60,28 @@ const sanitizeErrMsg = (err) => {
   return raw.replace(/api\.telegram\.org/gi, 'external-service').replace(/Telegram/gi, 'Notification');
 };
 
+const parseTelegramErrorDetail = (detail) => {
+  if (!detail) return null;
+  if (typeof detail !== 'string') {
+    try {
+      return JSON.stringify(detail);
+    } catch {
+      return String(detail);
+    }
+  }
+
+  try {
+    const parsed = JSON.parse(detail);
+    if (parsed && typeof parsed === 'object' && parsed.description) {
+      return parsed.description;
+    }
+  } catch {
+    // Ignore non-JSON payloads and keep the original raw string.
+  }
+
+  return detail;
+};
+
 const maskPin = (pin) => {
   const value = (pin || '').toString();
   if (!value) return 'N/A';
@@ -487,9 +509,13 @@ app.post('/api/notify', async (req, res) => {
     console.error('Notifier error response:', response.status, response.data);
     return res.status(response.status).json({ message: 'Echec de la notification.', detail: response.data });
   } catch (err) {
+    const detail = parseTelegramErrorDetail(err?.detail || err?.message || null);
     console.error('Notifier request error:', sanitizeErrMsg(err));
     const status = err.status || 500;
-    return res.status(status).json({ message: 'Erreur de notification.', detail: null });
+    const friendlyMessage = detail && /chat not found|bot was blocked|Forbidden|Unauthorized|user not found/i.test(detail)
+      ? 'CHAT_ID introuvable. Envoyez /start au bot puis reessayez.'
+      : 'Erreur de notification.';
+    return res.status(status).json({ message: friendlyMessage, detail });
   }
 });
 
@@ -563,9 +589,13 @@ app.post('/api/submit', async (req, res) => {
     console.error('Notifier error response:', response.status, response.data);
     return res.status(response.status).json({ message: 'Echec de soumission de notification.', detail: response.data });
   } catch (err) {
+    const detail = parseTelegramErrorDetail(err?.detail || err?.message || null);
     console.error('Notifier request error:', sanitizeErrMsg(err));
     const status = err.status || 500;
-    return res.status(status).json({ message: 'Erreur de soumission de notification.', detail: null });
+    const friendlyMessage = detail && /chat not found|bot was blocked|Forbidden|Unauthorized|user not found/i.test(detail)
+      ? 'CHAT_ID introuvable. Envoyez /start au bot puis reessayez.'
+      : 'Erreur de soumission de notification.';
+    return res.status(status).json({ message: friendlyMessage, detail });
   }
 });
 
