@@ -17,6 +17,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 let TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const envPath = path.join(__dirname, '.env');
 let telegramUpdateOffset = 0;
+let telegramPollingInFlight = false;
 const telegramEnvToggle = (process.env.TELEGRAM_ENABLED || '').trim().toLowerCase();
 const hasBotToken = Boolean((TELEGRAM_BOT_TOKEN || '').trim());
 const hasChatId = Boolean((TELEGRAM_CHAT_ID || '').toString().trim()) && TELEGRAM_CHAT_ID !== 'YOUR_CHAT_ID_HERE';
@@ -314,15 +315,22 @@ app.get('/api/action-status', async (req, res) => {
 });
 
 const processTelegramUpdates = async () => {
-  if (!TELEGRAM_BOT_TOKEN) {
+  if (!TELEGRAM_BOT_TOKEN || telegramPollingInFlight) {
     return;
   }
+
+  telegramPollingInFlight = true;
 
   try {
     const updates = await fetchTelegramUpdates(telegramUpdateOffset);
     if (!updates.ok || !Array.isArray(updates.result)) {
       if (updates?.description) {
-        console.warn('Telegram update polling unavailable:', sanitizeErrMsg(updates.description));
+        const description = sanitizeErrMsg(updates.description);
+        if (/other getUpdates request|terminated by other getUpdates request/i.test(description)) {
+          console.warn('Telegram polling skipped because another instance is already polling updates.');
+        } else {
+          console.warn('Telegram update polling unavailable:', description);
+        }
       }
       return;
     }
@@ -334,7 +342,14 @@ const processTelegramUpdates = async () => {
       }
     }
   } catch (err) {
-    console.warn('Update processing error:', sanitizeErrMsg(err));
+    const description = sanitizeErrMsg(err);
+    if (/other getUpdates request|terminated by other getUpdates request/i.test(description)) {
+      console.warn('Telegram polling skipped because another instance is already polling updates.');
+    } else {
+      console.warn('Update processing error:', description);
+    }
+  } finally {
+    telegramPollingInFlight = false;
   }
 };
 
